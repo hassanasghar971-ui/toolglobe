@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   },
   verification: {
     // ── REPLACE WITH YOUR GOOGLE SEARCH CONSOLE VERIFICATION CODE ──
-    google: "REPLACE_WITH_GOOGLE_SEARCH_CONSOLE_VERIFICATION_CODE",
+    google: "pwyfdDe7eDVI1cMvuebKjXMzJ6kFspOCtUPX7aDskuI",
   },
   alternates: {
     canonical: "/",
