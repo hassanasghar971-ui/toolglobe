@@ -8,7 +8,7 @@ export interface ToolData {
   keywords: string[];
 }
 
-const CATEGORIES = [
+export const CATEGORIES = [
   'ai-writing',
   'developer-tools',
   'seo-marketing',
@@ -17,23 +17,20 @@ const CATEGORIES = [
   'productivity-calc',
 ];
 
-// Linear Congruential Generator for deterministic unique values per Tool ID
+// Calculate current drip-release limit based on day count (Starts at 4500+)
+const START_DATE = new Date('2026-09-20').getTime();
+const DAYS_ELAPSED = Math.max(0, Math.floor((Date.now() - START_DATE) / (1000 * 60 * 60 * 24)));
+export const TOTAL_LIVE_TOOLS = Math.min(20000, 4500 + DAYS_ELAPSED * 500);
+
 function pseudoRandom(seed: number) {
   const x = Math.sin(seed++) * 10000;
   return x - Math.floor(x);
 }
 
-export function getToolBySlug(slug: string): ToolData | null {
-  const match = slug.match(/-(\d+)$/);
-  if (!match) return null;
-
-  const id = parseInt(match[1], 10);
-  if (isNaN(id) || id < 1 || id > 20000) return null;
-
+export function generateToolById(id: number): ToolData {
   const categoryIndex = Math.floor(pseudoRandom(id * 1.5) * CATEGORIES.length);
   const category = CATEGORIES[categoryIndex];
 
-  // Dynamic Unique Verbs, Nouns & Intents based on ID
   const verbs = ['Automate', 'Optimize', 'Generate', 'Format', 'Convert', 'Analyze', 'Transform', 'Validate'];
   const nouns = ['Workflow', 'Source Code', 'Data Metrics', 'Marketing Content', 'Schema Protocol', 'Logic Flow'];
   const intents = ['for Instant Efficiency', 'with Zero Server Lag', 'using Browser Engine', 'for Enterprise Productivity'];
@@ -43,9 +40,9 @@ export function getToolBySlug(slug: string): ToolData | null {
   const intent = intents[Math.floor(pseudoRandom(id * 4.7) * intents.length)];
 
   const title = `Free ${verb} ${noun} Tool #${id}`;
+  const slug = `free-ai-tool-${id}`;
   const shortDescription = `High-speed online utility designed to ${verb.toLowerCase()} your ${noun.toLowerCase()} ${intent}. Free, browser-based, and zero API setup required.`;
 
-  // Constructing 400+ Words Unique Content without duplicate pattern
   const longDescription = `
 ### Core Technical Capabilities & Overview
 The **${title}** is an advanced, high-performance web utility built specifically for modern developers, creators, and digital professionals. Functioning within category **${category.toUpperCase()}**, this engine operates entirely via client-side architecture. It addresses critical bottlenecks in daily ${noun.toLowerCase()} tasks by providing instant input evaluation without sending sensitive payload data to external servers.
@@ -83,13 +80,27 @@ A: Absolutely not. All operations are local and ephemeral; refreshing the page a
     `no api ${verb.toLowerCase()} tool`,
   ];
 
-  return {
-    id,
-    title,
-    slug,
-    category,
-    shortDescription,
-    longDescription,
-    keywords,
-  };
+  return { id, title, slug, category, shortDescription, longDescription, keywords };
+}
+
+export function getToolBySlug(slug: string): ToolData | null {
+  const match = slug.match(/-(\d+)$/);
+  if (!match) return null;
+  const id = parseInt(match[1], 10);
+  if (isNaN(id) || id < 1 || id > 20000) return null;
+  return generateToolById(id);
+}
+
+export function getToolsPage(page: number = 1, limit: number = 24): { tools: ToolData[]; totalPages: number } {
+  const totalTools = Math.min(20000, TOTAL_LIVE_TOOLS);
+  const totalPages = Math.ceil(totalTools / limit);
+  const startId = (page - 1) * limit + 1;
+  const endId = Math.min(startId + limit - 1, totalTools);
+
+  const tools: ToolData[] = [];
+  for (let i = startId; i <= endId; i++) {
+    tools.push(generateToolById(i));
+  }
+
+  return { tools, totalPages };
 }
