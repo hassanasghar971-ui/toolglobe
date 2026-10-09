@@ -1,8 +1,8 @@
-
 import { getToolsPage } from '@/lib/toolsData';
 import SearchBar from '@/components/SearchBar';
-import AdLayout from '@/components/AdLayout';
+import { AdLayout } from '@/components/AdLayout';
 import Link from 'next/link';
+
 
 export default function HomePage() {
   const { tools } = getToolsPage(1, 24);
