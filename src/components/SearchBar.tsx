@@ -13,7 +13,6 @@ export default function SearchBar() {
     e.preventDefault();
     if (!query.trim()) return;
 
-    // Search query parsing (e.g. extracts number or formats slug)
     const cleanQuery = query.trim().toLowerCase();
     const match = cleanQuery.match(/\d+/);
     
@@ -21,7 +20,6 @@ export default function SearchBar() {
       if (match) {
         router.push(`/tools/free-ai-tool-${match[0]}`);
       } else {
-        // Fallback for general keywords
         const toolId = (Math.abs(cleanQuery.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 19000) + 1;
         router.push(`/tools/free-ai-tool-${toolId}`);
       }
@@ -62,3 +60,5 @@ export default function SearchBar() {
     </div>
   );
 }
+
+export { SearchBar };
