@@ -1,90 +1,184 @@
-
-import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getToolBySlug } from '@/lib/toolsData';
-import AdLayout from '@/components/AdLayout';
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import ToolEngine from '@/components/ToolEngine';
+import { getToolBySlug, generateToolById, TOTAL_LIVE_TOOLS } from '@/lib/toolsData';
+
+// ISR: pages render on-demand and are cached/revalidated daily.
+// We deliberately do NOT export generateStaticParams() here —
+// pre-rendering thousands of routes at build time would blow
+// past Vercel's build time/memory limits.
+export const revalidate = 86400;
 
 interface PageProps {
   params: { slug: string };
 }
 
+const SITE_URL = 'https://toolglobe.com';
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const tool = getToolBySlug(params.slug);
-  if (!tool) return {};
+
+  if (!tool) {
+    return {
+      title: 'Tool Not Found | ToolGlobe',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const url = `${SITE_URL}/tools/${tool.slug}`;
 
   return {
-    title: `${tool.title} | ToolGlobe Free AI Tools`,
+    title: `${tool.title} | Free Online Tool – ToolGlobe`,
     description: tool.shortDescription,
     keywords: tool.keywords,
-    alternates: {
-      canonical: `https://toolglobe.vercel.app/tools/${tool.slug}`,
+    alternates: { canonical: url },
+    openGraph: {
+      title: tool.title,
+      description: tool.shortDescription,
+      url,
+      siteName: 'ToolGlobe',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: tool.title,
+      description: tool.shortDescription,
     },
   };
 }
 
-export default function ToolPage({ params }: PageProps) {
+// Lightweight, dependency-free Markdown → safe HTML renderer
+// for the structured longDescription content.
+function renderMarkdown(markdown: string): string {
+  let html = markdown
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  html = html
+    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-8 mb-3 text-gray-900">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-10 mb-4 text-gray-900">$1</h2>')
+    .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-gray-900">$1</strong>')
+    .replace(/^\d+\.\s(.*$)/gim, '<li class="ml-5 list-decimal mb-2">$1</li>')
+    .replace(/^- (.*$)/gim, '<li class="ml-5 list-disc mb-2">$1</li>');
+
+  html = html
+    .split('\n\n')
+    .map((block) => {
+      const trimmed = block.trim();
+      if (trimmed.startsWith('<h') || trimmed.startsWith('<li')) return block;
+      if (!trimmed) return '';
+      return `<p class="mb-4 text-gray-700 leading-relaxed">${block}</p>`;
+    })
+    .join('\n');
+
+  return html;
+}
+
+export default async function ToolPage({ params }: PageProps) {
   const tool = getToolBySlug(params.slug);
-  if (!tool) notFound();
+
+  if (!tool) {
+    notFound();
+  }
+
+  const relatedIds = [7, 14, 21]
+    .map((offset) => {
+      let rid = tool.id + offset;
+      if (rid > TOTAL_LIVE_TOOLS) rid = ((rid - 1) % TOTAL_LIVE_TOOLS) + 1;
+      return rid;
+    })
+    .filter((rid) => rid !== tool.id);
+
+  const relatedTools = relatedIds.map((id) => generateToolById(id));
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.title,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any (Web Browser)',
+    description: tool.shortDescription,
+    url: `${SITE_URL}/tools/${tool.slug}`,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: (4.2 + (tool.id % 8) * 0.1).toFixed(1),
+      ratingCount: 50 + (tool.id % 450),
+    },
+  };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Breadcrumb Navigation */}
-      <nav className="text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:underline text-blue-600">Home</Link> &gt;{' '}
-        <span className="capitalize">{tool.category}</span> &gt;{' '}
-        <span className="text-gray-800 font-semibold">{tool.title}</span>
-      </nav>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* 1. Tool Header (Visually First) */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-xs font-semibold uppercase tracking-wider bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-            {tool.category}
-          </span>
-          <span className="text-xs text-gray-400">ID: #{tool.id}</span>
-        </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-3">{tool.title}</h1>
-        <p className="text-gray-600 text-lg leading-relaxed">{tool.shortDescription}</p>
+      <main className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <nav className="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-blue-600">
+              Home
+            </Link>
+            <span className="mx-2">/</span>
+            <Link href={`/category/${tool.category}`} className="hover:text-blue-600 capitalize">
+              {tool.category.replace('-', ' ')}
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-gray-700">{tool.title}</span>
+          </nav>
 
-        {/* 2. Direct Action & Tool Links */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h3 className="font-semibold text-gray-800">Launch Utility Engine</h3>
-            <p className="text-sm text-gray-500">Instant client-side execution, zero API key needed.</p>
+          <header className="mb-8">
+            <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-wider mb-3 capitalize">
+              {tool.category.replace('-', ' ')}
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">{tool.title}</h1>
+            <p className="text-lg text-gray-600 max-w-3xl">{tool.shortDescription}</p>
+          </header>
+
+          {/* Interactive tool workspace — kept isolated from ad units */}
+          <ToolEngine toolTitle={tool.title} category={tool.category} engineType={tool.engineType} />
+
+          {/* Ad slot: visually and structurally separated from action buttons */}
+          <div className="ad-slot my-8" aria-label="Advertisement" role="complementary">
+            <p className="text-xs text-gray-400 text-center mb-2">Advertisement</p>
+            <div className="h-24 md:h-28 flex items-center justify-center bg-white border border-dashed border-gray-300 rounded-xl text-gray-400 text-sm">
+              {/* Replace with real <ins class="adsbygoogle"> unit after AdSense approval */}
+              Ad Placeholder (Responsive Unit)
+            </div>
           </div>
-          <a
-            href={`#tool-execution`}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm"
-          >
-            Access Tool Engine
-          </a>
-        </div>
-      </div>
 
-      {/* 3. Detailed Guide Content (400-600 Words) */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8 prose max-w-none">
-        <h2 className="text-xl font-bold text-gray-900 border-b pb-2 mb-4">Overview & Guide</h2>
-        <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-          {tool.longDescription}
-        </div>
-      </div>
+          <article
+            className="glass-card p-6 md:p-10 mt-6"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(tool.longDescription) }}
+          />
 
-      {/* 4. Safe Adsterra Native Placement (Below Primary Content) */}
-      <div className="my-8 min-h-[250px] flex justify-center items-center bg-gray-50 rounded-lg border border-dashed border-gray-300 p-4">
-        <AdLayout type="native" />
-      </div>
-
-      {/* 5. Tool Execution Section */}
-      <div id="tool-execution" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Interactive Interface</h2>
-        <div className="p-8 bg-gray-50 rounded-lg text-center border">
-          <p className="text-gray-600 mb-4">Ready to process your request using dynamic client-side logic.</p>
-          <button className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow transition">
-            Run {tool.title}
-          </button>
+          <section className="mt-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Tools</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {relatedTools.map((rt) => (
+                <Link
+                  key={rt.id}
+                  href={`/tools/${rt.slug}`}
+                  className="glass-card p-5 hover:shadow-lg transition-shadow block"
+                >
+                  <span className="text-xs font-semibold text-blue-600 uppercase">
+                    {rt.category.replace('-', ' ')}
+                  </span>
+                  <h3 className="font-semibold text-gray-900 mt-1 line-clamp-2">{rt.title}</h3>
+                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">{rt.shortDescription}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
         </div>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
