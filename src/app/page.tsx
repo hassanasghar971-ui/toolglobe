@@ -1,51 +1,40 @@
 import { getToolsPage } from '@/lib/toolsData';
 import SearchBar from '@/components/SearchBar';
 import { AdLayout } from '@/components/AdLayout';
-import { AdLayout } from '@/components/AdLayout';
-
-
+import Link from 'next/link';
 
 export default function HomePage() {
-  const { tools } = getToolsPage(1, 24);
+  const tools = getToolsPage();
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
-      <section className="text-center py-10">
-        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">
-          Discover <span className="text-blue-600">20,000+</span> Free High-Speed Utilities
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-          Browser-based AI and developer tools with zero server latency and total privacy.
-        </p>
-        <SearchBar />
-      </section>
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <AdLayout>
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <header className="text-center mb-10">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4">
+              ToolGlobe
+            </h1>
+            <p className="text-lg text-slate-600">
+              Discover and use the best online tools for developer efficiency and productivity.
+            </p>
+          </header>
 
-      <div className="my-8 flex justify-center">
-        <AdLayout type="native" />
-      </div>
+          <SearchBar />
 
-      <section className="my-10">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured AI Tools</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {tools.map((tool) => (
-            <Link
-              key={tool.id}
-              href={`/tools/${tool.slug}`}
-              className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group"
-            >
-              <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider bg-blue-50 px-2.5 py-1 rounded-md">
-                {tool.category}
-              </span>
-              <h3 className="font-bold text-gray-900 mt-3 group-hover:text-blue-600 transition-colors">
-                {tool.title}
-              </h3>
-              <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                {tool.shortDescription}
-              </p>
-            </Link>
-          ))}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {tools.map((tool) => (
+              <Link
+                key={tool.id}
+                href={`/tools/${tool.id}`}
+                className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-200 block"
+              >
+                <h2 className="text-xl font-bold mb-2 text-slate-800">{tool.title}</h2>
+                <p className="text-slate-600 text-sm">{tool.description}</p>
+              </Link>
+            ))}
+          </div>
         </div>
-      </section>
+      </AdLayout>
     </main>
   );
 }
