@@ -1,45 +1,64 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 
-export const SearchBar = () => {
+export default function SearchBar() {
   const [query, setQuery] = useState('');
-  const [focused, setFocused] = useState(false);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('tool-search-input')?.focus();
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    // Search query parsing (e.g. extracts number or formats slug)
+    const cleanQuery = query.trim().toLowerCase();
+    const match = cleanQuery.match(/\d+/);
+    
+    startTransition(() => {
+      if (match) {
+        router.push(`/tools/free-ai-tool-${match[0]}`);
+      } else {
+        // Fallback for general keywords
+        const toolId = (Math.abs(cleanQuery.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 19000) + 1;
+        router.push(`/tools/free-ai-tool-${toolId}`);
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    });
+  };
 
   return (
-    <div className="relative max-w-2xl mx-auto w-full">
-      <div className="relative flex items-center">
+    <div className="w-full max-w-2xl mx-auto my-4 px-2">
+      <form onSubmit={handleSearch} className="relative flex items-center w-full">
         <input
-          id="tool-search-input"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          placeholder="Search live AI tools (e.g., ai-writing-1)..."
-          className="w-full bg-gray-900/90 border border-gray-700/80 focus:border-indigo-500 rounded-2xl px-5 py-4 text-sm text-white placeholder-gray-400 focus:outline-none transition-all shadow-2xl pr-20"
+          placeholder="Search 20,000+ AI tools (e.g. 'code', '125', 'seo')..."
+          className="w-full px-5 py-4 pl-12 text-base text-gray-900 bg-white border-2 border-blue-500/30 rounded-2xl shadow-lg focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all placeholder-gray-400"
         />
-        <div className="absolute right-4 flex items-center gap-1 text-[11px] font-bold text-gray-400 bg-gray-800 border border-gray-700 px-2 py-1 rounded-md">
-          <kbd className="font-sans">⌘</kbd>
-          <kbd className="font-sans">K</kbd>
-        </div>
-      </div>
-      {focused && query.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl z-50">
-          <p className="text-xs text-gray-400">Press enter to view results for <strong className="text-white">&quot;{query}&quot;</strong></p>
-        </div>
-      )}
+        <svg
+          className="absolute left-4 w-6 h-6 text-blue-500 pointer-events-none"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="absolute right-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-medium text-sm rounded-xl transition-all shadow-md disabled:opacity-50"
+        >
+          {isPending ? 'Searching...' : 'Search'}
+        </button>
+      </form>
     </div>
   );
-};
+}
