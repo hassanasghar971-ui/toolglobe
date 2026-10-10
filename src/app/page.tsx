@@ -1,11 +1,11 @@
 import { getToolsPage } from '@/lib/toolsData';
 import SearchBar from '@/components/SearchBar';
-import { AdLayout } from '@/components/AdLayout';
-import Link from 'next/link';
+import { AdLayout } from '@/components/AdLayout'; 
+import Link from 'next/link'; 
 import ThemeToggle from '@/components/ThemeToggle';
 
 export default function HomePage() {
-  const tools = getToolsPage();
+  const tools = getToolsPage(); 
 
   const categories = Array.from(
     new Set(tools.map((t) => t.category).filter(Boolean))
