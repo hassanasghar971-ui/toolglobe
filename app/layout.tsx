@@ -1,6 +1,8 @@
+
 // app/layout.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/site-config";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -83,6 +85,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </footer>
         </ErrorBoundary>
+
+        {/* Adsterra Social Bar — loaded lazily after the page becomes interactive */}
+        <Script
+          id="adsterra-social-bar"
+          src="https://pl31821509.profitableratecpmnetwork.com/83/76/79/8376798993af31a2763d6f51857d452c.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
