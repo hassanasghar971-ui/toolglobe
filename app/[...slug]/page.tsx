@@ -8,6 +8,9 @@ import ToolArticle from "@/components/ToolArticle";
 export const dynamicParams = true;
 export const revalidate = 86400;
 
+// 🌐 Domain Base configuration for absolute SEO URLs
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://toolglobe.com";
+
 type PageProps = { params: { slug: string[] } };
 
 function resolveTool(params: { slug: string[] }) {
@@ -39,26 +42,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const seo = buildToolSEO(tool);
-  const selfUrl = `/${tool.slug}`;
+  const selfPath = `/${tool.slug.startsWith("/") ? tool.slug.slice(1) : tool.slug}`;
 
-  // Tier 1/2 → self-referential canonical, index/follow
-  // Tier 3 (quickvalue) → canonical points to parent converter, noindex/follow
-  const canonicalUrl =
+  // Relative path logic
+  const relativeCanonical =
     tool.kind === "quickvalue" && tool.family && tool.fromUnit && tool.toUnit
       ? `/convert/${tool.family}/${tool.fromUnit}-to-${tool.toUnit}`
-      : selfUrl;
+      : selfPath;
+
+  // ✅ ABSOLUTE CANONICAL URL (Fixes "User-declared canonical: None" in GSC)
+  const absoluteCanonicalUrl = `${SITE_URL}${relativeCanonical.startsWith("/") ? relativeCanonical : "/" + relativeCanonical}`;
+  const absoluteSelfUrl = `${SITE_URL}${selfPath}`;
 
   const desc = safeTruncate(tool.description, 160);
 
   return {
     title: tool.title,
     description: desc,
-    alternates: { canonical: canonicalUrl },
-    robots: seo.robots, // driven by getRobotsDirective(tool.tier) — single source of truth
+    alternates: { canonical: absoluteCanonicalUrl },
+    robots: seo.robots,
     openGraph: {
       title: tool.title,
       description: desc,
-      url: selfUrl,
+      url: absoluteSelfUrl,
       type: "website",
     },
     twitter: {
