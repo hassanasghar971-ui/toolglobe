@@ -1,82 +1,69 @@
-/* app/globals.css */
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* Brand color system — consumed by all components in Phases 3,5,6 */
-  --color-brand-50: #eef5ff;
-  --color-brand-100: #d9e8ff;
-  --color-brand-200: #bcd6ff;
-  --color-brand-300: #8ebaff;
-  --color-brand-400: #5992ff;
-  --color-brand-500: #3366ff;
-  --color-brand-600: #1f45e6;
-  --color-brand-700: #1a37b4;
-  --color-brand-800: #1a318f;
-  --color-brand-900: #1a2f71;
-  --color-brand-950: #121d47;
+  /* Brand color scale */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  --color-brand-950: #172554;
 
-  --color-surface-light: #ffffff;
-  --color-surface-dark: #0b0e14;
+  /*
+   * Populated at runtime by next/font (app/layout.tsx), which injects
+   * --font-inter via the Inter.variable className on <html>. The fallback
+   * chain guarantees text is never invisible/unstyled even if the font
+   * variable is momentarily absent during certain SSR edge cases.
+   */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-
-  --radius-card: 0.875rem;
-
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06),
-    0 1px 3px rgba(16, 24, 40, 0.1);
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
 }
 
-:root {
-  color-scheme: light;
+@layer base {
+  * {
+    @apply border-slate-200 dark:border-slate-800;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900 dark:bg-brand-800 dark:text-brand-50;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-950;
+  }
 }
 
-html.dark {
-  color-scheme: dark;
-}
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
 
-* {
-  border-color: theme(--color-brand-200 / 20%);
-}
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-html {
-  scroll-behavior: smooth;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  background-color: var(--color-surface-light);
-  color: #0b0e14;
-}
-
-html.dark body {
-  background-color: var(--color-surface-dark);
-  color: #e9edf5;
-}
-
-/* Custom scrollbar — performance-cheap, no JS */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background-color: var(--color-brand-300);
-  border-radius: 999px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-::selection {
-  background-color: var(--color-brand-200);
-  color: var(--color-brand-950);
-}
-
-/* Prevents layout shift from focus rings while keeping accessibility */
-:focus-visible {
-  outline: 2px solid var(--color-brand-500);
-  outline-offset: 2px;
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-300 dark:bg-slate-700;
+  }
 }
