@@ -1,81 +1,107 @@
-// middleware.ts
-import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { NextResponse, type NextRequest } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
-     * - _next/static, _next/image (Next.js internals)
-     * - favicon.ico
-     * - static asset extensions
+     * Run on every route except Next.js internals and static files that
+     * don't need a nonce, rate limiting, or a CSP header.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|site.webmanifest|robots.txt|sitemap\\.xml|sitemap/).*)",
   ],
 };
 
+/** Generates a cryptographically random, base64-encoded nonce (Edge-safe Web Crypto). */
 function generateNonce(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
   return btoa(binary);
 }
 
-export function middleware(request: NextRequest) {
-  // ---------------------------------------------------------------
-  // 1. RATE LIMITING (DDoS / abuse first line of defense)
-  // ---------------------------------------------------------------
+/**
+ * Builds the per-request Content-Security-Policy. The nonce lets our own
+ * inline/bundled scripts execute; 'strict-dynamic' lets scripts WE load
+ * (e.g. the Adsterra native-banner invoke script injected via
+ * document.createElement("script")) load further sub-resources. The
+ * explicit Adsterra domain allowlists below are a defense-in-depth fallback
+ * for browsers that don't fully honor 'strict-dynamic'.
+ */
+function buildCsp(nonce: string): string {
+  const directives: Record<string, string[]> = {
+    "default-src": ["'self'"],
+    "script-src": [
+      "'self'",
+      `'nonce-${nonce}'`,
+      "'strict-dynamic'",
+      "https://*.profitableratecpm.com",
+      "https://*.highperformanceformat.com",
+      "https://*.adsterratools.com",
+      "https://*.adsterra.com",
+    ],
+    "style-src": ["'self'", "'unsafe-inline'"],
+    "img-src": ["'self'", "data:", "https:", "blob:"],
+    "font-src": ["'self'", "data:"],
+    "connect-src": [
+      "'self'",
+      "https://*.profitableratecpm.com",
+      "https://*.highperformanceformat.com",
+      "https://*.adsterratools.com",
+      "https://*.adsterra.com",
+    ],
+    "frame-src": [
+      "'self'",
+      "https://*.profitableratecpm.com",
+      "https://*.highperformanceformat.com",
+      "https://*.adsterratools.com",
+    ],
+    "object-src": ["'none'"],
+    "base-uri": ["'self'"],
+    "form-action": ["'self'"],
+    "frame-ancestors": ["'self'"],
+    "upgrade-insecure-requests": [],
+  };
+
+  return Object.entries(directives)
+    .map(([key, values]) =>
+      values.length > 0 ? `${key} ${values.join(" ")}` : key
+    )
+    .join("; ");
+}
+
+function getClientIdentifier(request: NextRequest): string {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0].trim();
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
+  return "unknown";
+}
+
+export default async function middleware(request: NextRequest) {
   const identifier = getClientIdentifier(request);
   const rateLimitResult = checkRateLimit(identifier);
 
-  if (!rateLimitResult.allowed) {
-    return new NextResponse(
-      JSON.stringify({
-        error: "Too many requests. Please slow down and try again shortly.",
-      }),
-      {
-        status: 429,
-        headers: {
-          "Content-Type": "application/json",
-          "Retry-After": Math.ceil(
-            (rateLimitResult.resetAt - Date.now()) / 1000
-          ).toString(),
-          "X-RateLimit-Limit": rateLimitResult.limit.toString(),
-          "X-RateLimit-Remaining": "0",
-        },
-      }
+  if (!rateLimitResult.success) {
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
     );
+    return new NextResponse("Too Many Requests", {
+      status: 429,
+      headers: {
+        "Retry-After": String(retryAfterSeconds),
+        "X-RateLimit-Limit": String(rateLimitResult.limit),
+        "X-RateLimit-Remaining": "0",
+      },
+    });
   }
 
-  // ---------------------------------------------------------------
-  // 2. NONCE-BASED CONTENT SECURITY POLICY
-  //    Base policy is intentionally STRICT (self-only). Ad-network
-  //    domains (Adsterra / AdSense) are appended in Phase 7 via an
-  //    explicit, documented diff to this file — never silently.
-  // ---------------------------------------------------------------
   const nonce = generateNonce();
+  const csp = buildCsp(nonce);
 
-  const cspHeader = `
-    default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
-    style-src 'self' 'unsafe-inline';
-    img-src 'self' data: https: blob:;
-    font-src 'self' data:;
-    connect-src 'self';
-    frame-src 'none';
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'self';
-    upgrade-insecure-requests;
-  `
-    .replace(/\s{2,}/g, " ")
-    .trim();
-
-  // Propagate nonce + pathname to Server Components via request headers
-  // (consumed later by components/ads/* in Phase 7, and optionally by
-  // layout metadata logic in Phase 4/5).
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
@@ -84,18 +110,13 @@ export function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   });
 
-  // ---------------------------------------------------------------
-  // 3. SECURITY HEADERS (defense-in-depth beyond next.config.ts)
-  // ---------------------------------------------------------------
-  response.headers.set("Content-Security-Policy", cspHeader);
-  response.headers.set("X-RateLimit-Limit", rateLimitResult.limit.toString());
+  response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("x-nonce", nonce);
+  response.headers.set("X-RateLimit-Limit", String(rateLimitResult.limit));
   response.headers.set(
     "X-RateLimit-Remaining",
-    rateLimitResult.remaining.toString()
+    String(rateLimitResult.remaining)
   );
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set("X-Frame-Options", "SAMEORIGIN");
 
   return response;
 }
