@@ -9,7 +9,7 @@ const LAST_UPDATED = "January 15, 2025";
 export const metadata: Metadata = buildPageMetadata({
   title: `Disclaimer | ${SITE_NAME}`,
   description: `Important disclaimers regarding the accuracy, professional advice status, and third-party advertising shown on ${SITE_NAME}.`,
-  path: "/disclaimer",
+  pathSegments: ["disclaimer"],
 });
 
 const breadcrumbJsonLd = {
