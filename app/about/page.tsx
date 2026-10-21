@@ -10,6 +10,7 @@ import { getTotalToolCount } from "@/lib/tool-registry";
 export const metadata: Metadata = buildPageMetadata({
   title: `About Us | ${SITE_NAME}`,
   description: `Learn about ${SITE_NAME}, a free platform offering ${getTotalToolCount().toLocaleString()}+ browser-based utility tools for unit conversion, calculations, text processing, developer workflows, and more — built and maintained by ${OWNER.name}.`,
+  pathSegments: ["about"],
 });
 
 const breadcrumbJsonLd = {
