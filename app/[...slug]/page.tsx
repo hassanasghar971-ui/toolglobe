@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return buildPageMetadata({
     title: tool.seo?.metaTitle || `${tool.name} — Free Online Tool`,
-    description: tool.description,
+    description: tool.seo?.metaDescription || tool.shortDescription,
     pathSegments: slugArray,
   });
 }
