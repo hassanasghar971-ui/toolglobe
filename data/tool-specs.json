@@ -1,0 +1,177 @@
+{
+  "unitConverters": {
+    "categories": [
+      { "key": "length", "label": "Length", "units": ["mm", "cm", "m", "km", "in", "ft", "yd", "mi", "nmi"] },
+      { "key": "weight", "label": "Weight", "units": ["mg", "g", "kg", "t", "oz", "lb", "st"] },
+      { "key": "area", "label": "Area", "units": ["mm2", "cm2", "m2", "km2", "in2", "ft2", "yd2", "acre", "hectare"] },
+      { "key": "digital", "label": "Digital Storage", "units": ["bit", "byte", "kb", "mb", "gb", "tb", "pb"] },
+      { "key": "volume", "label": "Volume", "units": ["ml", "l", "m3", "tsp", "tbsp", "floz", "cup", "pt", "qt", "gal"] },
+      { "key": "speed", "label": "Speed", "units": ["mps", "kph", "mph", "knot", "fts"] },
+      { "key": "time", "label": "Time", "units": ["ms", "s", "min", "hr", "day", "week", "month", "year"] },
+      { "key": "pressure", "label": "Pressure", "units": ["pa", "kpa", "bar", "atm", "psi", "torr"] },
+      { "key": "temperature", "label": "Temperature", "units": ["c", "f", "k"] },
+      { "key": "currency", "label": "Currency", "units": ["usd", "eur", "gbp", "pkr", "inr", "aed", "sar", "cad", "aud", "jpy", "cny"] }
+    ]
+  },
+
+  "calculators": [
+    {
+      "formulaKey": "simple-interest", "slug": "simple-interest-calculator", "title": "Simple Interest Calculator",
+      "category": "Financial Calculators", "keywords": ["simple interest", "finance", "loan"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "EUR", "symbol": "€", "locale": "de-DE" },
+        { "code": "GBP", "symbol": "£", "locale": "en-GB" },
+        { "code": "PKR", "symbol": "₨", "locale": "en-PK" },
+        { "code": "INR", "symbol": "₹", "locale": "en-IN" },
+        { "code": "AED", "symbol": "د.إ", "locale": "ar-AE" }
+      ]
+    },
+    {
+      "formulaKey": "compound-interest", "slug": "compound-interest-calculator", "title": "Compound Interest Calculator",
+      "category": "Financial Calculators", "keywords": ["compound interest", "investment", "finance"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "EUR", "symbol": "€", "locale": "de-DE" },
+        { "code": "GBP", "symbol": "£", "locale": "en-GB" },
+        { "code": "PKR", "symbol": "₨", "locale": "en-PK" },
+        { "code": "INR", "symbol": "₹", "locale": "en-IN" },
+        { "code": "AED", "symbol": "د.إ", "locale": "ar-AE" }
+      ]
+    },
+    {
+      "formulaKey": "loan-emi", "slug": "loan-emi-calculator", "title": "Loan EMI Calculator",
+      "category": "Financial Calculators", "keywords": ["loan", "emi", "mortgage", "finance"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "EUR", "symbol": "€", "locale": "de-DE" },
+        { "code": "GBP", "symbol": "£", "locale": "en-GB" },
+        { "code": "PKR", "symbol": "₨", "locale": "en-PK" },
+        { "code": "INR", "symbol": "₹", "locale": "en-IN" },
+        { "code": "AED", "symbol": "د.إ", "locale": "ar-AE" }
+      ]
+    },
+    {
+      "formulaKey": "discount", "slug": "discount-calculator", "title": "Discount Calculator",
+      "category": "Shopping Calculators", "keywords": ["discount", "sale", "price off"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "EUR", "symbol": "€", "locale": "de-DE" },
+        { "code": "GBP", "symbol": "£", "locale": "en-GB" },
+        { "code": "PKR", "symbol": "₨", "locale": "en-PK" },
+        { "code": "INR", "symbol": "₹", "locale": "en-IN" },
+        { "code": "AED", "symbol": "د.إ", "locale": "ar-AE" }
+      ]
+    },
+    {
+      "formulaKey": "tip-calculator", "slug": "tip-calculator", "title": "Tip Calculator",
+      "category": "Shopping Calculators", "keywords": ["tip", "gratuity", "restaurant bill"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "EUR", "symbol": "€", "locale": "de-DE" },
+        { "code": "GBP", "symbol": "£", "locale": "en-GB" },
+        { "code": "PKR", "symbol": "₨", "locale": "en-PK" },
+        { "code": "INR", "symbol": "₹", "locale": "en-IN" },
+        { "code": "AED", "symbol": "د.إ", "locale": "ar-AE" }
+      ]
+    },
+    {
+      "formulaKey": "tax-calculator", "slug": "sales-tax-calculator", "title": "Sales Tax Calculator",
+      "category": "Financial Calculators", "keywords": ["tax", "sales tax", "vat"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "EUR", "symbol": "€", "locale": "de-DE" },
+        { "code": "GBP", "symbol": "£", "locale": "en-GB" },
+        { "code": "PKR", "symbol": "₨", "locale": "en-PK" },
+        { "code": "INR", "symbol": "₹", "locale": "en-IN" },
+        { "code": "AED", "symbol": "د.إ", "locale": "ar-AE" }
+      ]
+    },
+    {
+      "formulaKey": "break-even", "slug": "break-even-calculator", "title": "Break-Even Point Calculator",
+      "category": "Business Calculators", "keywords": ["break even", "business", "unit economics"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "EUR", "symbol": "€", "locale": "de-DE" },
+        { "code": "GBP", "symbol": "£", "locale": "en-GB" }
+      ]
+    },
+    {
+      "formulaKey": "fuel-cost", "slug": "fuel-cost-calculator", "title": "Fuel Cost Calculator",
+      "category": "Travel Calculators", "keywords": ["fuel", "gas cost", "trip cost"],
+      "currencyVariants": [
+        { "code": "USD", "symbol": "$", "locale": "en-US" },
+        { "code": "PKR", "symbol": "₨", "locale": "en-PK" },
+        { "code": "INR", "symbol": "₹", "locale": "en-IN" }
+      ]
+    },
+    {
+      "formulaKey": "bmi-metric", "slug": "bmi-calculator-metric", "title": "BMI Calculator (Metric)",
+      "category": "Health Calculators", "keywords": ["bmi", "body mass index", "health", "metric"]
+    },
+    {
+      "formulaKey": "bmi-imperial", "slug": "bmi-calculator-imperial", "title": "BMI Calculator (Imperial)",
+      "category": "Health Calculators", "keywords": ["bmi", "body mass index", "health", "pounds"]
+    },
+    {
+      "formulaKey": "percentage-of", "slug": "percentage-calculator", "title": "Percentage Calculator",
+      "category": "Math Calculators", "keywords": ["percentage", "percent of"]
+    },
+    {
+      "formulaKey": "percentage-change", "slug": "percentage-change-calculator", "title": "Percentage Change Calculator",
+      "category": "Math Calculators", "keywords": ["percentage change", "percent increase", "percent decrease"]
+    },
+    {
+      "formulaKey": "average-stats", "slug": "average-calculator", "title": "Average / Statistics Calculator",
+      "category": "Math Calculators", "keywords": ["average", "mean", "median", "statistics"]
+    },
+    {
+      "formulaKey": "age-calculator", "slug": "age-calculator", "title": "Age Calculator",
+      "category": "Date Calculators", "keywords": ["age", "birthday", "how old am i"]
+    },
+    {
+      "formulaKey": "date-difference", "slug": "date-difference-calculator", "title": "Date Difference Calculator",
+      "category": "Date Calculators", "keywords": ["date difference", "days between dates"]
+    },
+    {
+      "formulaKey": "circle-area", "slug": "circle-area-calculator", "title": "Circle Area Calculator",
+      "category": "Math Calculators", "keywords": ["circle area", "geometry", "circumference"]
+    },
+    {
+      "formulaKey": "pythagorean", "slug": "pythagorean-theorem-calculator", "title": "Pythagorean Theorem Calculator",
+      "category": "Math Calculators", "keywords": ["pythagorean theorem", "hypotenuse", "geometry"]
+    },
+    {
+      "formulaKey": "cagr", "slug": "cagr-calculator", "title": "CAGR Calculator",
+      "category": "Financial Calculators", "keywords": ["cagr", "growth rate", "investment"]
+    }
+  ],
+
+  "textTransformer": {
+    "modes": [
+      { "key": "uppercase", "slug": "uppercase-text-converter", "title": "Uppercase Text Converter", "category": "Text Tools", "keywords": ["uppercase", "capitalize all"] },
+      { "key": "lowercase", "slug": "lowercase-text-converter", "title": "Lowercase Text Converter", "category": "Text Tools", "keywords": ["lowercase"] },
+      { "key": "titlecase", "slug": "title-case-converter", "title": "Title Case Converter", "category": "Text Tools", "keywords": ["title case"] },
+      { "key": "sentencecase", "slug": "sentence-case-converter", "title": "Sentence Case Converter", "category": "Text Tools", "keywords": ["sentence case"] },
+      { "key": "camelcase", "slug": "camel-case-converter", "title": "camelCase Converter", "category": "Developer Tools", "keywords": ["camel case", "programming"] },
+      { "key": "pascalcase", "slug": "pascal-case-converter", "title": "PascalCase Converter", "category": "Developer Tools", "keywords": ["pascal case", "programming"] },
+      { "key": "snakecase", "slug": "snake-case-converter", "title": "snake_case Converter", "category": "Developer Tools", "keywords": ["snake case", "programming"] },
+      { "key": "kebabcase", "slug": "kebab-case-converter", "title": "kebab-case Converter", "category": "Developer Tools", "keywords": ["kebab case", "slug", "programming"] },
+      { "key": "alternatingcase", "slug": "alternating-case-converter", "title": "Alternating Case Converter", "category": "Text Tools", "keywords": ["alternating case", "spongebob case"] },
+      { "key": "inversecase", "slug": "inverse-case-converter", "title": "Inverse Case Converter", "category": "Text Tools", "keywords": ["invert case", "toggle case"] },
+      { "key": "base64-encode", "slug": "base64-encoder", "title": "Base64 Encoder", "category": "Developer Tools", "keywords": ["base64 encode"] },
+      { "key": "base64-decode", "slug": "base64-decoder", "title": "Base64 Decoder", "category": "Developer Tools", "keywords": ["base64 decode"] },
+      { "key": "url-encode", "slug": "url-encoder", "title": "URL Encoder", "category": "Developer Tools", "keywords": ["url encode", "percent encoding"] },
+      { "key": "url-decode", "slug": "url-decoder", "title": "URL Decoder", "category": "Developer Tools", "keywords": ["url decode"] },
+      { "key": "html-encode", "slug": "html-encoder", "title": "HTML Entity Encoder", "category": "Developer Tools", "keywords": ["html encode", "escape html"] },
+      { "key": "html-decode", "slug": "html-decoder", "title": "HTML Entity Decoder", "category": "Developer Tools", "keywords": ["html decode", "unescape html"] },
+      { "key": "rot13", "slug": "rot13-encoder-decoder", "title": "ROT13 Encoder / Decoder", "category": "Developer Tools", "keywords": ["rot13", "cipher"] },
+      { "key": "md5", "slug": "md5-hash-generator", "title": "MD5 Hash Generator", "category": "Developer Tools", "keywords": ["md5", "hash", "checksum"] },
+      { "key": "sha1", "slug": "sha1-hash-generator", "title": "SHA-1 Hash Generator", "category": "Developer Tools", "keywords": ["sha1", "hash"] },
+      { "key": "sha256", "slug": "sha256-hash-generator", "title": "SHA-256 Hash Generator", "category": "Developer Tools", "keywords": ["sha256", "hash", "crypto"] },
+      { "key": "sha384", "slug": "sha384-hash-generator", "title": "SHA-384 Hash Generator", "category": "Developer Tools", "keywords": ["sha384", "hash"] },
+      { "key": "sha512", "slug": "sha512-hash-generator", "title": "SHA-512 Hash Generator", "category": "Developer Tools", "keywords": ["sha512", "hash"] },
+      { "key": "text-analytics", "slug": "text-analytics-tool", "title": "Text Analytics (Word & Character Counter)", "category": "Text Tools", "keywords": ["word counter", "character counter", "reading time"] }
+    ]
+  }
+}
