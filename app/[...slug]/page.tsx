@@ -1,104 +1,70 @@
-
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getHighTierTools, getToolByPath, getRelatedTools } from "@/lib/tool-registry";
-import { getCategoryBySlug } from "@/lib/categories";
-import { parseToolRouteSegments, buildCanonicalUrl, buildToolPathSegments } from "@/lib/slug-utils";
-import ToolBreadcrumbs from "@/components/tool-engine/ToolBreadcrumbs";
+import type { Metadata } from "next";
+import { getToolById, getAllTools } from "@/lib/tools-registry";
 import { ToolPageClient } from "@/components/tool-engine/ToolPageClient";
-import FaqAccordion from "@/components/tool-engine/FaqAccordion";
-import RelatedToolsList from "@/components/tool-engine/RelatedToolsList";
-import ToolJsonLd from "@/components/tool-engine/ToolJsonLd";
+import { buildPageMetadata } from "@/lib/seo/metadata";
+import { buildCanonicalUrl } from "@/lib/canonical";
+import { SITE_URL } from "@/lib/site-config";
 
-export const revalidate = 86400;
-export const dynamicParams = true;
-
-interface ToolPageProps {
+interface PageProps {
   params: Promise<{ slug: string[] }>;
 }
 
 export async function generateStaticParams() {
-  return getHighTierTools().map((tool) => ({
-    slug: buildToolPathSegments(tool.categorySlug, tool.slug),
+  const tools = getAllTools();
+  return tools.map((tool) => ({
+    slug: tool.id.split("/"),
   }));
 }
 
-export async function generateMetadata({ params }: ToolPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const parsed = parseToolRouteSegments(slug);
-  if (!parsed) return {};
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const slugArray = resolvedParams.slug || [];
+  const toolId = slugArray.join("/");
+  const tool = getToolById(toolId);
 
-  const tool = getToolByPath(parsed.categorySlug, parsed.toolSlug);
-  if (!tool) return {};
+  if (!tool) {
+    return {};
+  }
 
-  const canonicalUrl = buildCanonicalUrl(buildToolPathSegments(tool.categorySlug, tool.slug));
-  const shouldIndex = tool.seo.indexTier !== "low";
-
-  return {
-    title: tool.seo.metaTitle,
-    description: tool.seo.metaDescription,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    robots: {
-      index: shouldIndex,
-      follow: true,
-      googleBot: {
-        index: shouldIndex,
-        follow: true,
-        "max-snippet": -1,
-        "max-image-preview": "large",
-      },
-    },
-    openGraph: {
-      title: tool.seo.metaTitle,
-      description: tool.seo.metaDescription,
-      url: canonicalUrl,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: tool.seo.metaTitle,
-      description: tool.seo.metaDescription,
-    },
-  };
+  return buildPageMetadata({
+    title: tool.seoTitle || `${tool.name} — Free Online Tool`,
+    description: tool.description,
+    pathSegments: slugArray,
+  });
 }
 
-export default async function ToolPage({ params }: ToolPageProps) {
-  const { slug } = await params;
-  const parsed = parseToolRouteSegments(slug);
-  if (!parsed) notFound();
+export default async function DynamicToolPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const slugArray = resolvedParams.slug || [];
+  const toolId = slugArray.join("/");
+  const tool = getToolById(toolId);
 
-  const tool = getToolByPath(parsed.categorySlug, parsed.toolSlug);
-  if (!tool) notFound();
+  if (!tool) {
+    notFound();
+  }
 
-  const category = getCategoryBySlug(tool.categorySlug);
-  if (!category) notFound();
-
-  const canonicalUrl = buildCanonicalUrl(buildToolPathSegments(tool.categorySlug, tool.slug));
-  const relatedTools = getRelatedTools(tool);
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: tool.name,
+        item: buildCanonicalUrl(slugArray),
+      },
+    ],
+  };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <ToolJsonLd tool={tool} canonicalUrl={canonicalUrl} categoryName={category.name} />
-      <ToolBreadcrumbs category={category} toolName={tool.name} />
-
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 sm:text-4xl">
-          {tool.name}
-        </h1>
-        <p className="mt-3 max-w-2xl text-neutral-600 dark:text-neutral-400">{tool.shortDescription}</p>
-      </header>
-
-      <ToolPageClient tool={tool} relatedTools={relatedTools} />
-
-      <section className="mt-10 max-w-none">
-        <h2 className="mb-3 text-xl font-bold text-neutral-900 dark:text-neutral-100">About This Tool</h2>
-        <p className="leading-relaxed text-neutral-600 dark:text-neutral-400">{tool.longDescription}</p>
-      </section>
-
-      <FaqAccordion faqs={tool.seo.faqs} />
-      <RelatedToolsList tools={relatedTools} />
-    </main>
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <ToolPageClient tool={tool} />
+    </div>
   );
 }
