@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getToolById, getAllTools } from "@/lib/tools-registry";
+import { getToolById, getAllTools } from "@/lib/tool-registry";
 import { ToolPageClient } from "@/components/tool-engine/ToolPageClient";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { buildCanonicalUrl } from "@/lib/canonical";
