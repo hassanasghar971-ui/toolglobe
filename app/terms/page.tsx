@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { buildStaticPageCanonicalUrl } from "@/lib/canonical";
 import { SITE_NAME, SITE_URL, OWNER } from "@/lib/site-config";
@@ -9,7 +10,7 @@ const LAST_UPDATED = "January 15, 2025";
 export const metadata: Metadata = buildPageMetadata({
   title: `Terms of Service | ${SITE_NAME}`,
   description: `The Terms of Service governing your use of ${SITE_NAME}'s free online tools, including acceptable use, warranty disclaimers, and liability limitations.`,
-  path: "/terms",
+  pathSegments: ["terms"],
 });
 
 const breadcrumbJsonLd = {
@@ -42,123 +43,84 @@ export default function TermsPage() {
       </p>
 
       <div className="mt-8 space-y-8 text-slate-600 dark:text-slate-400">
-        <Section title="1. Acceptance of Terms">
+        <Section title="1. Agreement to Terms">
           <p>
-            By accessing or using {SITE_NAME} (&ldquo;the Service&rdquo;), operated by{" "}
-            {OWNER.name}, you agree to be bound by these Terms of Service. If you do not agree
-            to these terms, please discontinue use of the Service immediately.
+            Welcome to {SITE_NAME} (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;),
+            accessible at{" "}
+            <Link href="/" className="text-brand-600 underline hover:text-brand-700 dark:text-brand-400">
+              {SITE_URL}
+            </Link>
+            . By accessing or using our website and utility tools, you agree to be bound by
+            these Terms of Service. If you disagree with any part of these terms, you may not
+            access the website.
           </p>
         </Section>
 
-        <Section title="2. Description of Service">
+        <Section title="2. Use of Free Tools">
           <p>
-            {SITE_NAME} provides free, browser-based utility tools including but not limited
-            to unit converters, calculators, text tools, developer utilities, color tools, and
-            generators. All computations are performed client-side within your browser. The
-            Service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo; without any
-            guarantee of uninterrupted access.
+            All tools, calculators, converters, and generators provided on {SITE_NAME} are
+            offered completely free of charge for personal, educational, and professional
+            utility use. You agree to use our tools only for lawful purposes and in a manner
+            that does not infringe the rights of, or restrict the use of the site by, any
+            third party.
           </p>
         </Section>
 
-        <Section title="3. Not Professional Advice">
+        <Section title="3. Intellectual Property">
           <p>
-            Tools such as calculators (e.g., BMI, loan EMI, percentage) are provided for
-            general informational and educational purposes only. They do not constitute
-            financial, medical, legal, engineering, or other professional advice. Always
-            consult a qualified professional before making decisions based on results from the
-            Service.
+            The design, source code, user interface, layout, and tool engines of {SITE_NAME}{" "}
+            are the intellectual property of {OWNER.name} and are protected by applicable
+            copyright and intellectual property laws. You may not copy, reproduce,
+            redistribute, or reverse-engineer our proprietary code or interface elements
+            without explicit prior written consent.
           </p>
         </Section>
 
-        <Section title="4. User Responsibilities">
-          <p>By using {SITE_NAME}, you agree that you will not:</p>
-          <ul className="list-disc space-y-1.5 pl-5">
-            <li>Use the Service for any unlawful purpose or in violation of any applicable law.</li>
-            <li>Attempt to disrupt, overload, or bypass rate limiting, security, or anti-abuse measures.</li>
-            <li>Scrape, crawl, or systematically extract data from the Service beyond standard, good-faith use.</li>
-            <li>Upload or input malicious code, scripts, or content intended to harm the Service or other users.</li>
-            <li>Misrepresent your identity or impersonate any person or entity while using the Service.</li>
-          </ul>
-        </Section>
-
-        <Section title="5. Intellectual Property">
+        <Section title="4. Disclaimer of Warranties">
           <p>
-            The {SITE_NAME} name, logo, design, source code, and tool engine are the
-            intellectual property of {OWNER.name} unless otherwise noted. You may not copy,
-            reproduce, or redistribute substantial portions of the Service without prior
-            written permission.
+            The tools and services on {SITE_NAME} are provided on an &ldquo;as is&rdquo; and
+            &ldquo;as available&rdquo; basis without warranties of any kind, either express or
+            implied. We do not guarantee that the site will be uninterrupted, secure, or free
+            of errors, or that tool outputs will be 100% accurate for your specific use case.
           </p>
         </Section>
 
-        <Section title="6. Third-Party Advertisements and Links">
+        <Section title="5. Limitation of Liability">
           <p>
-            {SITE_NAME} displays advertisements served by third parties, including Google
-            AdSense and Adsterra, and may contain links to third-party websites. We do not
-            control, endorse, or assume responsibility for the content, products, services, or
-            privacy practices of any third party.
+            In no event shall {OWNER.name} or {SITE_NAME} be liable for any indirect,
+            incidental, special, consequential, or punitive damages arising out of or
+            connected with your use of, or inability to use, our website or tools.
           </p>
         </Section>
 
-        <Section title="7. Disclaimer of Warranties">
+        <Section title="6. External Links">
           <p>
-            The Service is provided without warranties of any kind, express or implied,
-            including but not limited to warranties of merchantability, fitness for a
-            particular purpose, accuracy, or non-infringement. We do not warrant that results
-            produced by any tool will be error-free or suitable for your specific needs.
+            Our website may contain links to third-party websites or services that are not
+            owned or controlled by {SITE_NAME}. We assume no responsibility for the content,
+            privacy policies, or practices of any third-party websites.
           </p>
         </Section>
 
-        <Section title="8. Limitation of Liability">
+        <Section title="7. Changes to Terms">
           <p>
-            To the fullest extent permitted by law, {OWNER.name} and {SITE_NAME} shall not be
-            liable for any direct, indirect, incidental, consequential, or punitive damages
-            arising from your use of, or inability to use, the Service, including but not
-            limited to reliance on calculation or conversion results.
+            We reserve the right to modify or replace these Terms of Service at any time. Any
+            changes will be posted on this page with a revised &ldquo;Last updated&rdquo; date.
+            Your continued use of the site after changes constitutes your acceptance of the new
+            terms.
           </p>
         </Section>
 
-        <Section title="9. Service Modifications and Availability">
+        <Section title="8. Contact Information">
           <p>
-            We reserve the right to modify, suspend, or discontinue any part of the Service,
-            including individual tools, at any time without prior notice. We also reserve the
-            right to update these Terms periodically.
-          </p>
-        </Section>
-
-        <Section title="10. Governing Law">
-          <p>
-            These Terms shall be governed by and construed in accordance with applicable law,
-            without regard to conflict-of-law principles. Any disputes arising from these
-            Terms shall be resolved through good-faith negotiation in the first instance.
-          </p>
-        </Section>
-
-        <Section title="11. Termination">
-          <p>
-            We reserve the right to restrict or terminate your access to the Service, without
-            notice, if we believe you have violated these Terms or engaged in abusive
-            behavior.
-          </p>
-        </Section>
-
-        <Section title="12. Changes to These Terms">
-          <p>
-            We may revise these Terms from time to time. The &ldquo;Last updated&rdquo; date
-            at the top of this page reflects the most recent revision. Continued use of the
-            Service after changes constitutes acceptance of the revised Terms.
-          </p>
-        </Section>
-
-        <Section title="13. Contact">
-          <p>
-            Questions about these Terms should be directed to {OWNER.name} at{" "}
+            If you have any questions about these Terms of Service, please contact{" "}
+            {OWNER.name} at{" "}
             <a
               href={`mailto:${OWNER.email}`}
               className="text-brand-600 underline hover:text-brand-700 dark:text-brand-400"
             >
               {OWNER.email}
-            </a>{" "}
-            or {OWNER.phones.map((p) => p.display).join(" / ")}.
+            </a>
+            .
           </p>
         </Section>
       </div>
