@@ -1,13 +1,14 @@
+
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getHighTierTools, getToolByPath, getRelatedTools } from "@/lib/tool-registry";
 import { getCategoryBySlug } from "@/lib/categories";
 import { parseToolRouteSegments, buildCanonicalUrl, buildToolPathSegments } from "@/lib/slug-utils";
-import { ToolBreadcrumbs } from "@/components/tool-engine/ToolBreadcrumbs";
-import { ToolPageClient } from "@/components/tool-engine/ToolPageClient";
-import { FaqAccordion } from "@/components/tool-engine/FaqAccordion";
-import { RelatedToolsList } from "@/components/tool-engine/RelatedToolsList";
-import { ToolJsonLd } from "@/components/tool-engine/ToolJsonLd";
+import ToolBreadcrumbs from "@/components/tool-engine/ToolBreadcrumbs";
+import ToolPageClient from "@/components/tool-engine/ToolPageClient";
+import FaqAccordion from "@/components/tool-engine/FaqAccordion";
+import RelatedToolsList from "@/components/tool-engine/RelatedToolsList";
+import ToolJsonLd from "@/components/tool-engine/ToolJsonLd";
 
 // ISR: tool logic/content rarely changes — 24h revalidation balances
 // freshness with edge-cache efficiency at 20,000+ page scale.
@@ -19,11 +20,6 @@ interface ToolPageProps {
 }
 
 export async function generateStaticParams() {
-  // Pre-render only high-tier tools at build time to keep `next build`
-  // bounded as the registry scales toward 20,000+. Remaining tools
-  // render on-demand via dynamicParams + ISR above — they are still
-  // fully indexable; Google crawls them on first request and the edge
-  // caches the result thereafter (s-maxage behavior from next.config).
   return getHighTierTools().map((tool) => ({
     slug: buildToolPathSegments(tool.categorySlug, tool.slug),
   }));
@@ -37,7 +33,6 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
   const tool = getToolByPath(parsed.categorySlug, parsed.toolSlug);
   if (!tool) return {};
 
-  // ABSOLUTE canonical URL — required by master spec, never relative.
   const canonicalUrl = buildCanonicalUrl(buildToolPathSegments(tool.categorySlug, tool.slug));
   const shouldIndex = tool.seo.indexTier !== "low";
 
