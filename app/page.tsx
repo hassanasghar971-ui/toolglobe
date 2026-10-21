@@ -1,77 +1,95 @@
 import type { Metadata } from "next";
-import { HeroSection } from "@/components/home/HeroSection";
-import { CategoryGrid } from "@/components/home/CategoryGrid";
-import { FeaturedTools } from "@/components/home/FeaturedTools";
-import { AdsterraNativeBanner } from "@/components/ads/adsterra-native-banner";
+import Link from "next/link";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { buildHomepageJsonLdGraph, jsonLdScriptProps } from "@/lib/seo/json-ld";
-import { CATEGORIES } from "@/lib/categories";
-import {
-  getToolsByCategory,
-  getTotalToolCount,
-  type ToolDefinition,
-} from "@/lib/tool-registry";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/site-config";
-
-export const revalidate = 3600;
+import { buildStaticPageCanonicalUrl } from "@/lib/canonical";
+import { SITE_NAME, SITE_URL, OWNER } from "@/lib/site-config";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: `${SITE_NAME} — Free Online Tools`,
-  description: SITE_DESCRIPTION,
-  path: "/",
+  title: `Contact Us | ${SITE_NAME}`,
+  description: `Get in touch with ${SITE_NAME}. Reach ${OWNER.name} directly by email or phone for support, bug reports, tool requests, or business inquiries.`,
+  pathSegments: ["contact"],
 });
 
-const FEATURED_TOOLS_LIMIT = 24;
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Contact Us",
+      item: buildStaticPageCanonicalUrl("/contact"),
+    },
+  ],
+};
 
-/**
- * Round-robins across every category so the homepage never looks dominated
- * by whichever category happens to have the most tools (e.g. unit
- * converters). Pulls only indexTier !== "low" tools so featured placements
- * always point at fully-indexed, high-confidence pages.
- */
-function getDiverseFeaturedTools(): ToolDefinition[] {
-  const perCategoryPools = CATEGORIES.map((category) =>
-    getToolsByCategory(category.slug).filter(
-      (tool) => tool.indexTier !== "low"
-    )
-  );
-
-  const featured: ToolDefinition[] = [];
-  let cursor = 0;
-
-  while (featured.length < FEATURED_TOOLS_LIMIT) {
-    let addedThisRound = false;
-
-    for (const pool of perCategoryPools) {
-      if (featured.length >= FEATURED_TOOLS_LIMIT) break;
-      const candidate = pool[cursor];
-      if (candidate) {
-        featured.push(candidate);
-        addedThisRound = true;
-      }
-    }
-
-    cursor += 1;
-    if (!addedThisRound) break;
-  }
-
-  return featured;
-}
-
-export default function HomePage() {
-  const featuredTools = getDiverseFeaturedTools();
-  const jsonLdGraph = buildHomepageJsonLdGraph({
-    toolCount: getTotalToolCount(),
-    categories: CATEGORIES,
-  });
-
+export default function ContactPage() {
   return (
-    <>
-      <script {...jsonLdScriptProps(jsonLdGraph)} />
-      <HeroSection />
-      <CategoryGrid />
-      <FeaturedTools tools={featuredTools} />
-      <AdsterraNativeBanner className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8" />
-    </>
+    <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
+      <p className="text-sm font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+        Support & Inquiries
+      </p>
+      <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+        Contact {OWNER.name}
+      </h1>
+      <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
+        Have feedback, found a bug, or want to suggest a new utility tool? Reach out directly using any of the channels below.
+      </p>
+
+      <div className="mt-8 grid gap-6 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Email Us</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            For general queries, bug reports, or partnership proposals.
+          </p>
+          <a
+            href={`mailto:${OWNER.email}`}
+            className="mt-4 inline-block font-medium text-brand-600 hover:underline dark:text-brand-400"
+          >
+            {OWNER.email}
+          </a>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Call / WhatsApp</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Available for urgent technical or business communication.
+          </p>
+          <div className="mt-4 flex flex-col gap-1">
+            {OWNER.phones.map((phone) => (
+              <a
+                key={phone.raw}
+                href={`tel:${phone.raw}`}
+                className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+              >
+                {phone.display}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10 rounded-2xl bg-slate-50 p-6 border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Developer & Maintainer</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          {SITE_NAME} is independently engineered and managed by <strong className="text-slate-900 dark:text-white">{OWNER.name}</strong> ({OWNER.role}), focusing on high-performance browser tools and optimal client-side privacy.
+        </p>
+      </div>
+
+      <div className="mt-8 text-center">
+        <Link
+          href="/"
+          className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+        >
+          ← Back to Home
+        </Link>
+      </div>
+    </main>
   );
 }
