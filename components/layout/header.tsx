@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Search, Menu, X, Wrench, Sparkles, ShieldCheck } from "lucide-react";
 import { useState } from "react";
