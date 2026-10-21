@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import dynamic from "next/dynamic";
@@ -30,8 +29,7 @@ const inter = Inter({
  * immediately. It already renders null until opened.
  */
 const SearchModal = dynamic(
-  () =>
-    import("@/components/search/SearchModal").then((mod) => mod.SearchModal)
+  () => import("@/components/search/SearchModal").then((mod) => mod.default)
 );
 
 export const metadata: Metadata = {
