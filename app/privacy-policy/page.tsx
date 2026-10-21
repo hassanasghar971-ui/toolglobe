@@ -10,7 +10,7 @@ const LAST_UPDATED = "January 15, 2025";
 export const metadata: Metadata = buildPageMetadata({
   title: `Privacy Policy | ${SITE_NAME}`,
   description: `Read the ${SITE_NAME} Privacy Policy to understand what information we collect, how third-party advertising cookies are used, and how to contact us with privacy questions.`,
-  path: "/privacy-policy",
+  pathSegments: ["privacy-policy"],
 });
 
 const breadcrumbJsonLd = {
