@@ -4,7 +4,7 @@ import { getHighTierTools, getToolByPath, getRelatedTools } from "@/lib/tool-reg
 import { getCategoryBySlug } from "@/lib/categories";
 import { parseToolRouteSegments, buildCanonicalUrl, buildToolPathSegments } from "@/lib/slug-utils";
 import ToolBreadcrumbs from "@/components/tool-engine/ToolBreadcrumbs";
-import { ToolPageClient } from "@/components/tool-engine/ToolPageClient";
+import ToolPageClient from "@/components/tool-engine/ToolPageClient";
 import FaqAccordion from "@/components/tool-engine/FaqAccordion";
 import RelatedToolsList from "@/components/tool-engine/RelatedToolsList";
 import ToolJsonLd from "@/components/tool-engine/ToolJsonLd";
@@ -91,7 +91,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
         <p className="mt-3 max-w-2xl text-neutral-600 dark:text-neutral-400">{tool.shortDescription}</p>
       </header>
 
-      <ToolPageClient tool={tool} />
+      <ToolPageClient tool={tool} relatedTools={relatedTools} />
 
       <section className="mt-10 max-w-none">
         <h2 className="mb-3 text-xl font-bold text-neutral-900 dark:text-neutral-100">About This Tool</h2>
