@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import dynamic from "next/dynamic";
@@ -26,13 +27,11 @@ const inter = Inter({
 /**
  * Deferred off the initial bundle — SearchModal is dead weight on first
  * paint for the vast majority of visits that never trigger Cmd/Ctrl+K
- * immediately. It already renders null until opened, so ssr:false changes
- * nothing about visible output or hydration timing.
+ * immediately. It already renders null until opened.
  */
 const SearchModal = dynamic(
   () =>
-    import("@/components/search/SearchModal").then((mod) => mod.SearchModal),
-  { ssr: false }
+    import("@/components/search/SearchModal").then((mod) => mod.SearchModal)
 );
 
 export const metadata: Metadata = {
