@@ -9,7 +9,7 @@ import { SITE_NAME, SITE_URL, OWNER } from "@/lib/site-config";
 export const metadata: Metadata = buildPageMetadata({
   title: `Contact Us | ${SITE_NAME}`,
   description: `Get in touch with ${SITE_NAME}. Reach ${OWNER.name} directly by email or phone for support, bug reports, tool requests, or business inquiries.`,
-  path: "/contact",
+  pathSegments: ["contact"],
 });
 
 const breadcrumbJsonLd = {
