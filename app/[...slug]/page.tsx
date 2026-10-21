@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { getToolById, getAllTools } from "@/lib/tool-registry";
 import { ToolPageClient } from "@/components/tool-engine/ToolPageClient";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { buildCanonicalUrl } from "@/lib/canonical";
+import { buildStaticPageCanonicalUrl } from "@/lib/canonical";
 import { SITE_URL } from "@/lib/site-config";
 
 interface PageProps {
@@ -53,7 +53,7 @@ export default async function DynamicToolPage({ params }: PageProps) {
         "@type": "ListItem",
         position: 2,
         name: tool.name,
-        item: buildCanonicalUrl(slugArray),
+        item: buildStaticPageCanonicalUrl(`/${slugArray.join("/")}`),
       },
     ],
   };
