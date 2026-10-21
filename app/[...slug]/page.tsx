@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 import { getHighTierTools, getToolByPath, getRelatedTools } from "@/lib/tool-registry";
 import { getCategoryBySlug } from "@/lib/categories";
 import { parseToolRouteSegments, buildCanonicalUrl, buildToolPathSegments } from "@/lib/slug-utils";
-import { ToolBreadcrumbs } from "@/components/tool-engine/ToolBreadcrumbs";
-import { ToolPageClient } from "@/components/tool-engine/ToolPageClient";
-import { FaqAccordion } from "@/components/tool-engine/FaqAccordion";
-import { RelatedToolsList } from "@/components/tool-engine/RelatedToolsList";
-import { ToolJsonLd } from "@/components/tool-engine/ToolJsonLd";
+import ToolBreadcrumbs from "@/components/tool-engine/ToolBreadcrumbs";
+import ToolPageClient from "@/components/tool-engine/ToolPageClient";
+import FaqAccordion from "@/components/tool-engine/FaqAccordion";
+import RelatedToolsList from "@/components/tool-engine/RelatedToolsList";
+import ToolJsonLd from "@/components/tool-engine/ToolJsonLd";
 
 // ISR: tool logic/content rarely changes — 24h revalidation balances
 // freshness with edge-cache efficiency at 20,000+ page scale.
