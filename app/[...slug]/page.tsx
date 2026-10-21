@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return buildPageMetadata({
-    title: tool.seoTitle || `${tool.name} — Free Online Tool`,
+    title: tool.seo?.metaTitle || `${tool.name} — Free Online Tool`,
     description: tool.description,
     pathSegments: slugArray,
   });
