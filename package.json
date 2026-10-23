@@ -2,14 +2,18 @@
   "name": "toolglobe",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=20.0.0" },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate:registry": "tsx scripts/validate-registry.ts",
+    "validate:seo": "tsx scripts/validate-canonical-urls.ts"
   },
   "dependencies": {
     "next": "^15.1.0",
@@ -34,19 +38,7 @@
     "eslint-config-next": "^15.1.0",
     "@next/eslint-plugin-next": "^15.1.0",
     "eslint-plugin-import": "^2.31.0",
-    "@eslint/eslintrc": "^3.1.0"
-  }
-}
-{
-  "scripts": {
-    "validate:registry": "tsx scripts/validate-registry.ts"
-  },
-  "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
     "tsx": "^4.19.2"
-  }
-}
-{
-  "scripts": {
-    "validate:seo": "tsx scripts/validate-canonical-urls.ts"
   }
 }
