@@ -4,6 +4,7 @@ import { ArrowRight, ShieldCheck, Zap, Globe2 } from "lucide-react";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getAllCategories, getAllTools } from "@/lib/tool-registry";
 import { Sidebar } from "@/components/layout/sidebar";
+import { AdSlot } from "@/components/ads/ad-slot";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "ToolGlobe — 20,000+ Free Online Tools for Developers & Professionals",
@@ -52,6 +53,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOMEPAGE && (
+        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+          <AdSlot
+            variant="adsense-display"
+            adSlotId={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOMEPAGE}
+          />
+        </div>
+      )}
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[240px_1fr]">
