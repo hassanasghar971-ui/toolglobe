@@ -45,3 +45,8 @@
     "tsx": "^4.19.2"
   }
 }
+{
+  "scripts": {
+    "validate:seo": "tsx scripts/validate-canonical-urls.ts"
+  }
+}
