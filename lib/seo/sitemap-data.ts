@@ -1,10 +1,26 @@
+import { getAllTools, getAllCategorySlugs } from "@/lib/tool-registry";
+import {
+  buildCanonicalUrl,
+  buildStaticPageCanonicalUrl,
+} from "@/lib/seo/canonical";
 import { SITE_URL } from "@/lib/constants/site";
-import { getAllCategories, getAllTools } from "@/lib/tool-registry";
 
-/** Hard spec requirement: no sub-sitemap may exceed 5,000 URLs. */
+/**
+ * Max URLs per sitemap chunk. Google's sitemap protocol allows up to
+ * 50,000 URLs/file, but we cap tighter for faster per-chunk generation
+ * and to keep each chunk comfortably small as the catalog scales toward
+ * 20,000+ tools.
+ */
 export const SITEMAP_CHUNK_SIZE = 5000;
 
-export type SitemapChangeFrequency = "daily" | "weekly" | "monthly";
+export type SitemapChangeFrequency =
+  | "always"
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "yearly"
+  | "never";
 
 export interface SitemapUrlEntry {
   url: string;
@@ -14,48 +30,88 @@ export interface SitemapUrlEntry {
 }
 
 /**
- * Only routes that are REAL and live in the current build are listed here.
- * Legal/static pages (Privacy, Terms, About, Contact, Disclaimer) are
- * intentionally omitted until Phase 7 ships those routes — add them to
- * this function, not anywhere else, once they exist.
+ * Legal/static pages added in Phase 7. Kept here (not just inline in
+ * app/*/page.tsx) so both the sitemap generator and the canonical URL
+ * validator script share one source of truth for which legal slugs
+ * must exist and must be indexed.
  */
-function getStaticUrlEntries(): SitemapUrlEntry[] {
-  const now = new Date().toISOString();
+export const STATIC_LEGAL_SLUGS = [
+  "privacy-policy",
+  "terms",
+  "about",
+  "contact",
+  "disclaimer",
+] as const;
 
-  const homeEntry: SitemapUrlEntry = {
+/**
+ * Computed fresh per call (NOT a module-level constant) so that each
+ * sitemap regeneration (revalidate = 86400) reflects the actual time of
+ * that generation, rather than a stale timestamp frozen at the first
+ * cold start of a long-lived serverless instance.
+ */
+function currentTimestamp(): string {
+  return new Date().toISOString();
+}
+
+function getHomepageUrlEntry(): SitemapUrlEntry {
+  return {
     url: SITE_URL,
-    lastModified: now,
+    lastModified: currentTimestamp(),
     changeFrequency: "daily",
     priority: 1.0,
   };
-
-  const categoryEntries: SitemapUrlEntry[] = getAllCategories().map(
-    (category) => ({
-      url: `${SITE_URL}/tools/${category.slug}`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    })
-  );
-
-  return [homeEntry, ...categoryEntries];
 }
 
-function getToolUrlEntries(): SitemapUrlEntry[] {
-  return getAllTools().map((tool) => ({
-    url: `${SITE_URL}/tools/${tool.category}/${tool.slug}`,
-    lastModified: tool.updatedAt,
-    changeFrequency: "monthly",
-    priority: tool.isFeatured ? 0.9 : 0.7,
+function getToolsIndexUrlEntry(): SitemapUrlEntry {
+  return {
+    url: buildStaticPageCanonicalUrl(["tools"]),
+    lastModified: currentTimestamp(),
+    changeFrequency: "daily",
+    priority: 0.9,
+  };
+}
+
+function getCategoryIndexUrlEntries(): SitemapUrlEntry[] {
+  return getAllCategorySlugs().map((slug) => ({
+    url: buildStaticPageCanonicalUrl(["tools", slug]),
+    lastModified: currentTimestamp(),
+    changeFrequency: "weekly",
+    priority: 0.7,
   }));
 }
 
 /**
- * Single aggregation point — every URL that will ever appear in a sitemap
- * flows through this function. At 20,000+ tools this array is rebuilt per
- * invocation (acceptable: sitemap routes are crawler-traffic only and are
- * cached for 24h via the revalidate + header configuration below).
+ * Phase 7 addition: legal/static pages are intentionally LOW priority
+ * and infrequently-changing ("yearly") — they exist for compliance and
+ * trust signals, not as primary organic entry points.
  */
+function getLegalPageUrlEntries(): SitemapUrlEntry[] {
+  return STATIC_LEGAL_SLUGS.map((slug) => ({
+    url: buildStaticPageCanonicalUrl([slug]),
+    lastModified: currentTimestamp(),
+    changeFrequency: "yearly",
+    priority: 0.3,
+  }));
+}
+
+export function getStaticUrlEntries(): SitemapUrlEntry[] {
+  return [
+    getHomepageUrlEntry(),
+    getToolsIndexUrlEntry(),
+    ...getCategoryIndexUrlEntries(),
+    ...getLegalPageUrlEntries(),
+  ];
+}
+
+export function getToolUrlEntries(): SitemapUrlEntry[] {
+  return getAllTools().map((tool) => ({
+    url: buildCanonicalUrl(tool.category, tool.slug),
+    lastModified: currentTimestamp(),
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }));
+}
+
 export function getAllSitemapUrls(): SitemapUrlEntry[] {
   return [...getStaticUrlEntries(), ...getToolUrlEntries()];
 }
@@ -65,9 +121,9 @@ export function getSitemapChunkCount(): number {
   return Math.max(1, Math.ceil(total / SITEMAP_CHUNK_SIZE));
 }
 
-export function getSitemapChunk(id: number): SitemapUrlEntry[] {
-  const all = getAllSitemapUrls();
-  const start = id * SITEMAP_CHUNK_SIZE;
+export function getSitemapChunk(chunkIndex: number): SitemapUrlEntry[] {
+  const allUrls = getAllSitemapUrls();
+  const start = chunkIndex * SITEMAP_CHUNK_SIZE;
   const end = start + SITEMAP_CHUNK_SIZE;
-  return all.slice(start, end);
+  return allUrls.slice(start, end);
 }
