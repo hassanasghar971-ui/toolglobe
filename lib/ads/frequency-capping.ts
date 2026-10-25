@@ -5,15 +5,18 @@ const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_IMPRESSIONS = 2;
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 hours
 
-export type AdFormatKey = "social-bar" | "popunder" | "direct-link";
+export type AdFormatKey =
+  | "adsterra-social-bar"
+  | "adsterra-popunder"
+  | "adsterra-direct-link";
 
 export const AD_FREQUENCY_CONFIG: Record<
   AdFormatKey,
   { maxImpressions: number; windowMs: number }
 > = {
-  "social-bar": { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
-  popunder: { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
-  "direct-link": { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
+  "adsterra-social-bar": { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
+  "adsterra-popunder": { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
+  "adsterra-direct-link": { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
 };
 
 function isBrowser(): boolean {
@@ -50,8 +53,6 @@ function readTimestampsFromStorage(storageKey: string): number[] {
   try {
     return parseTimestampArray(window.localStorage.getItem(storageKey));
   } catch {
-    // localStorage may be unavailable (private browsing / quota exceeded).
-    // Cookie-based tracking below provides a fallback signal.
     return [];
   }
 }
@@ -82,10 +83,6 @@ function pruneExpired(timestamps: number[], windowMs: number): number[] {
   return timestamps.filter((timestamp) => now - timestamp < windowMs);
 }
 
-/**
- * Merges localStorage + cookie records (deduplicated) so that clearing
- * only one storage mechanism does not silently reset the frequency cap.
- */
 function getCombinedTimestamps(format: AdFormatKey): number[] {
   const config = AD_FREQUENCY_CONFIG[format];
   const storageKey = `${STORAGE_PREFIX}${format}`;
