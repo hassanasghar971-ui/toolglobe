@@ -102,8 +102,17 @@ export default async function ToolPage({
           How to Use {tool.name}
         </h2>
         <ol className="list-decimal space-y-2 pl-5 text-slate-700">
-          {tool.usageGuide.map((step, index) => (
-            <li key={index}>{step}</li>
+          {tool.usageGuide.map((guideStep) => (
+            <li key={guideStep.step}>
+              <span className="font-medium text-slate-900">
+                {guideStep.title}
+              </span>
+              {guideStep.description ? (
+                <p className="mt-1 text-sm text-slate-600">
+                  {guideStep.description}
+                </p>
+              ) : null}
+            </li>
           ))}
         </ol>
       </section>
@@ -112,6 +121,16 @@ export default async function ToolPage({
         <h2 id="examples-heading" className="text-xl font-semibold text-slate-900">
           Examples
         </h2>
+        {/*
+          ⚠️ UNVERIFIED: tool.examples is still assumed to be a plain
+          string[] here. Since tool.usageGuide turned out to be a
+          structured object array ({ step, title, description }), this
+          section may fail with the identical TypeScript error on the
+          next build if `examples` has a similar structured shape.
+          If the next build error points here, send the `examples`
+          field type from lib/tool-registry/types.ts and this block
+          will be corrected the same way the usage guide was.
+        */}
         <ul className="space-y-2 text-slate-700">
           {tool.examples.map((example, index) => (
             <li key={index} className="rounded-md border border-slate-200 p-3">
