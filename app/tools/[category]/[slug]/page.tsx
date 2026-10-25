@@ -121,20 +121,25 @@ export default async function ToolPage({
         <h2 id="examples-heading" className="text-xl font-semibold text-slate-900">
           Examples
         </h2>
-        {/*
-          ⚠️ UNVERIFIED: tool.examples is still assumed to be a plain
-          string[] here. Since tool.usageGuide turned out to be a
-          structured object array ({ step, title, description }), this
-          section may fail with the identical TypeScript error on the
-          next build if `examples` has a similar structured shape.
-          If the next build error points here, send the `examples`
-          field type from lib/tool-registry/types.ts and this block
-          will be corrected the same way the usage guide was.
-        */}
-        <ul className="space-y-2 text-slate-700">
+        <ul className="space-y-3 text-slate-700">
           {tool.examples.map((example, index) => (
             <li key={index} className="rounded-md border border-slate-200 p-3">
-              {example}
+              <p className="font-medium text-slate-900">{example.title}</p>
+              <dl className="mt-2 space-y-1 text-sm">
+                <div className="flex gap-2">
+                  <dt className="font-medium text-slate-600">Input:</dt>
+                  <dd className="font-mono text-slate-800">{example.input}</dd>
+                </div>
+                <div className="flex gap-2">
+                  <dt className="font-medium text-slate-600">Output:</dt>
+                  <dd className="font-mono text-slate-800">{example.output}</dd>
+                </div>
+              </dl>
+              {example.explanation ? (
+                <p className="mt-2 text-sm text-slate-600">
+                  {example.explanation}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>
