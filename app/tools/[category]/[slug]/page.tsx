@@ -85,7 +85,7 @@ export default async function ToolPage({
       {process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOOL_PAGE ? (
         <AdSlot
           variant="adsense-display"
-          slotId={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOOL_PAGE}
+          adSlotId={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOOL_PAGE}
           className="my-8"
         />
       ) : null}
