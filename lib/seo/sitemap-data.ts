@@ -31,9 +31,9 @@ export interface SitemapUrlEntry {
 
 /**
  * Legal/static pages added in Phase 7. Kept here (not just inline in
- * app/*/page.tsx) so both the sitemap generator and the canonical URL
- * validator script share one source of truth for which legal slugs
- * must exist and must be indexed.
+ * the relevant route page files) so both the sitemap generator and the
+ * canonical URL validator script share one source of truth for which
+ * legal slugs must exist and must be indexed.
  */
 export const STATIC_LEGAL_SLUGS = [
   "privacy-policy",
