@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export interface FaqItem {
+interface FaqItem {
   question: string;
   answer: string;
 }
