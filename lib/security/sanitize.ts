@@ -41,7 +41,11 @@ function zodSchemaForField(field: ToolField): z.ZodTypeAny {
 
       if (!field.required) return base.optional();
 
-      let required = base.refine((v) => v !== undefined, {
+      // Typed as ZodTypeAny from the start — each .refine() call below
+      // produces a progressively deeper ZodEffects<...> wrapper, which is
+      // NOT structurally assignable back to a ZodNumber/ZodEffects<ZodNumber>
+      // typed variable. Keeping this as ZodTypeAny avoids that mismatch.
+      let required: z.ZodTypeAny = base.refine((v) => v !== undefined, {
         message: `${field.label} is required.`,
       });
 
@@ -66,15 +70,25 @@ function zodSchemaForField(field: ToolField): z.ZodTypeAny {
     case "select":
     case "radio": {
       const allowed = (field.options ?? []).map((o) => o.value);
-      let schema = z.string();
+
+      // `base` stays a plain ZodString so `.min()` (a ZodString-native
+      // method) remains valid. The `.refine()`-derived value is only ever
+      // assigned to the separately-typed `schema` (ZodTypeAny) below —
+      // never back into `base` — avoiding the same class of type error
+      // fixed in the "number" case above.
+      let base = z.string();
+      if (field.required) {
+        base = base.min(1, `${field.label} is required.`);
+      }
+
+      let schema: z.ZodTypeAny = base;
       if (allowed.length > 0) {
-        schema = schema.refine((v) => v === "" || allowed.includes(v), {
+        schema = base.refine((v) => v === "" || allowed.includes(v), {
           message: `Invalid value selected for ${field.label}.`,
         });
       }
-      return field.required
-        ? schema.min(1, `${field.label} is required.`)
-        : schema.optional();
+
+      return field.required ? schema : schema.optional();
     }
 
     case "file": {
@@ -95,18 +109,24 @@ function zodSchemaForField(field: ToolField): z.ZodTypeAny {
     case "color":
     case "date":
     default: {
-      let schema = z.string().max(MAX_FIELD_LENGTH, {
+      // Same pattern as "select"/"radio": `base` remains a plain ZodString
+      // so `.max()`/`.min()` stay valid; `.refine()` output goes only into
+      // the separately-typed `schema` (ZodTypeAny).
+      let base = z.string().max(MAX_FIELD_LENGTH, {
         message: `${field.label} exceeds the maximum allowed length.`,
       });
       if (field.required) {
-        schema = schema.min(1, `${field.label} is required.`);
+        base = base.min(1, `${field.label} is required.`);
       }
+
+      let schema: z.ZodTypeAny = base;
       if (field.validationPattern) {
         const pattern = new RegExp(field.validationPattern);
-        schema = schema.refine((v) => v.length === 0 || pattern.test(v), {
+        schema = base.refine((v) => v.length === 0 || pattern.test(v), {
           message: `${field.label} format is invalid.`,
         });
       }
+
       return field.required ? schema : schema.optional();
     }
   }
