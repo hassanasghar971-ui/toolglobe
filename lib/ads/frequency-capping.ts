@@ -1,21 +1,30 @@
-export type AdFormatKey =
-  | "adsterra-social-bar"
-  | "adsterra-popunder"
-  | "adsterra-direct-link";
-
 const STORAGE_PREFIX = "tg_ad_freq_";
 const COOKIE_PREFIX = "tg_ad_freq_";
+
 const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_IMPRESSIONS_PER_WINDOW = 2;
+const MAX_IMPRESSIONS = 2;
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 hours
+
+export type AdFormatKey = "social-bar" | "popunder" | "direct-link";
+
+export const AD_FREQUENCY_CONFIG: Record<
+  AdFormatKey,
+  { maxImpressions: number; windowMs: number }
+> = {
+  "social-bar": { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
+  popunder: { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
+  "direct-link": { maxImpressions: MAX_IMPRESSIONS, windowMs: WINDOW_MS },
+};
 
 function isBrowser(): boolean {
-  return typeof window !== "undefined";
+  return typeof window !== "undefined" && typeof document !== "undefined";
 }
 
 function readCookie(name: string): string | null {
   if (!isBrowser()) return null;
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
+  const captured = match?.[1];
+  return captured !== undefined ? decodeURIComponent(captured) : null;
 }
 
 function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
@@ -25,75 +34,92 @@ function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
   )}; max-age=${maxAgeSeconds}; path=/; SameSite=Lax`;
 }
 
-/**
- * Dual-storage (localStorage + cookie) read, merged as a union. This means
- * a single storage layer being cleared (private browsing wiping
- * localStorage, or a cookie-blocking extension) cannot silently reset the
- * cap on its own — only clearing BOTH resets impression history.
- */
-function readTimestamps(key: string): number[] {
-  const now = Date.now();
-  const sources: string[] = [];
-
+function parseTimestampArray(raw: string | null): number[] {
+  if (!raw) return [];
   try {
-    const fromLocalStorage = window.localStorage.getItem(STORAGE_PREFIX + key);
-    if (fromLocalStorage) sources.push(fromLocalStorage);
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((entry): entry is number => typeof entry === "number");
   } catch {
-    // localStorage unavailable (private mode / disabled) — degrade gracefully.
+    return [];
   }
-
-  const fromCookie = readCookie(COOKIE_PREFIX + key);
-  if (fromCookie) sources.push(fromCookie);
-
-  const merged = new Set<number>();
-  for (const raw of sources) {
-    try {
-      const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        for (const ts of parsed) {
-          if (typeof ts === "number" && now - ts < WINDOW_MS) {
-            merged.add(ts);
-          }
-        }
-      }
-    } catch {
-      // Malformed/corrupted storage value — ignore rather than throw.
-    }
-  }
-
-  return Array.from(merged).sort((a, b) => a - b);
 }
 
-function writeTimestamps(key: string, timestamps: number[]): void {
-  const serialized = JSON.stringify(timestamps);
+function readTimestampsFromStorage(storageKey: string): number[] {
+  if (!isBrowser()) return [];
   try {
-    window.localStorage.setItem(STORAGE_PREFIX + key, serialized);
+    return parseTimestampArray(window.localStorage.getItem(storageKey));
   } catch {
-    // Ignore — cookie write below still provides capping resilience.
+    // localStorage may be unavailable (private browsing / quota exceeded).
+    // Cookie-based tracking below provides a fallback signal.
+    return [];
   }
-  writeCookie(COOKIE_PREFIX + key, serialized, WINDOW_MS / 1000);
 }
 
-/** Returns true if the given intrusive format is still under its 24h cap. */
-export function canShowIntrusiveAd(format: AdFormatKey): boolean {
-  if (!isBrowser()) return false;
-  return readTimestamps(format).length < MAX_IMPRESSIONS_PER_WINDOW;
-}
-
-/** Records one impression/click against the rolling 24h window. */
-export function recordIntrusiveAdImpression(format: AdFormatKey): void {
+function writeTimestampsToStorage(storageKey: string, timestamps: number[]): void {
   if (!isBrowser()) return;
-  const timestamps = readTimestamps(format);
-  timestamps.push(Date.now());
-  writeTimestamps(format, timestamps);
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(timestamps));
+  } catch {
+    // Fail silently — cookie record still applies the cap.
+  }
+}
+
+function readTimestampsFromCookie(format: AdFormatKey): number[] {
+  return parseTimestampArray(readCookie(`${COOKIE_PREFIX}${format}`));
+}
+
+function writeTimestampsToCookie(format: AdFormatKey, timestamps: number[]): void {
+  writeCookie(
+    `${COOKIE_PREFIX}${format}`,
+    JSON.stringify(timestamps),
+    COOKIE_MAX_AGE_SECONDS
+  );
+}
+
+function pruneExpired(timestamps: number[], windowMs: number): number[] {
+  const now = Date.now();
+  return timestamps.filter((timestamp) => now - timestamp < windowMs);
+}
+
+/**
+ * Merges localStorage + cookie records (deduplicated) so that clearing
+ * only one storage mechanism does not silently reset the frequency cap.
+ */
+function getCombinedTimestamps(format: AdFormatKey): number[] {
+  const config = AD_FREQUENCY_CONFIG[format];
+  const storageKey = `${STORAGE_PREFIX}${format}`;
+
+  const fromStorage = pruneExpired(
+    readTimestampsFromStorage(storageKey),
+    config.windowMs
+  );
+  const fromCookie = pruneExpired(readTimestampsFromCookie(format), config.windowMs);
+
+  return Array.from(new Set([...fromStorage, ...fromCookie])).sort((a, b) => a - b);
+}
+
+export function canShowIntrusiveAd(format: AdFormatKey): boolean {
+  const config = AD_FREQUENCY_CONFIG[format];
+  const timestamps = getCombinedTimestamps(format);
+  return timestamps.length < config.maxImpressions;
+}
+
+export function recordIntrusiveAdImpression(format: AdFormatKey): void {
+  const config = AD_FREQUENCY_CONFIG[format];
+  const storageKey = `${STORAGE_PREFIX}${format}`;
+
+  const updated = pruneExpired(
+    [...getCombinedTimestamps(format), Date.now()],
+    config.windowMs
+  );
+
+  writeTimestampsToStorage(storageKey, updated);
+  writeTimestampsToCookie(format, updated);
 }
 
 export function getRemainingImpressions(format: AdFormatKey): number {
-  if (!isBrowser()) return 0;
-  return Math.max(0, MAX_IMPRESSIONS_PER_WINDOW - readTimestamps(format).length);
+  const config = AD_FREQUENCY_CONFIG[format];
+  const timestamps = getCombinedTimestamps(format);
+  return Math.max(0, config.maxImpressions - timestamps.length);
 }
-
-export const AD_FREQUENCY_CONFIG = {
-  maxImpressionsPerWindow: MAX_IMPRESSIONS_PER_WINDOW,
-  windowMs: WINDOW_MS,
-} as const;
