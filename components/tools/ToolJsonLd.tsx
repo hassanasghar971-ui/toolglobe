@@ -90,7 +90,6 @@ export default function ToolJsonLd({ tool, category }: ToolJsonLdProps) {
   return (
     <script
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: serialized }}
     />
   );
