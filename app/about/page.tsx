@@ -1,89 +1,88 @@
 import type { Metadata } from "next";
-import { ShieldCheck, Zap, Code2 } from "lucide-react";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { getAllTools } from "@/lib/tool-registry";
+import { getAllTools, getAllCategories } from "@/lib/tool-registry";
+import OrganizationJsonLd from "@/components/seo/OrganizationJsonLd";
 import {
   SITE_NAME,
   OWNER_NAME,
   OWNER_NAME_LOCAL,
   OWNER_CONTACT_EMAIL,
+  OWNER_CONTACT_PHONE_PRIMARY,
+  OWNER_CONTACT_PHONE_SECONDARY,
 } from "@/lib/constants/site";
-import OrganizationJsonLd from "@/components/seo/OrganizationJsonLd";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "About ToolGlobe — Free Online Tools, Built for Speed and Privacy",
-  description:
-    "Learn about ToolGlobe, a free online tools platform built by Hassan Asghar, focused on fast, privacy-respecting, browser-based utilities.",
-  pathSegments: ["about"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata({
+    pathSegments: ["about"],
+    title: "About Us",
+    description: `Learn about ${SITE_NAME}, a free online platform offering thousands of utility tools, and the team behind it.`,
+  });
+}
 
 export default function AboutPage() {
   const toolCount = getAllTools().length;
+  const categoryCount = getAllCategories().length;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-3xl space-y-8 px-4 py-12">
       <OrganizationJsonLd />
 
-      <h1 className="text-3xl font-bold text-slate-900">About {SITE_NAME}</h1>
-
-      <div className="prose prose-slate mt-6 max-w-none text-sm leading-relaxed text-slate-700">
-        <p>
-          {SITE_NAME} was built around a simple idea: everyday utility tools
-          — formatters, converters, counters, and calculators — should be
-          fast, free, and should not require uploading your data to a
-          stranger's server. Today the platform hosts {toolCount} fully
-          functional tools, with new ones added regularly, across categories
-          spanning developer utilities, text processing, math, and more.
+      <header className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          About {SITE_NAME}
+        </h1>
+        <p className="text-base text-slate-600">
+          {`${SITE_NAME} is on a mission to make everyday digital tasks faster and simpler for everyone, everywhere.`}
         </p>
+      </header>
 
-        <h2>What Makes ToolGlobe Different</h2>
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <Zap className="h-5 w-5 text-brand-600" />
-          <p className="mt-3 text-sm font-semibold text-slate-800">
-            Instant Processing
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Most tools run entirely in your browser — no waiting on a server
-            round-trip for results.
-          </p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <ShieldCheck className="h-5 w-5 text-brand-600" />
-          <p className="mt-3 text-sm font-semibold text-slate-800">
-            Privacy by Design
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Your input data is processed locally and is never stored on our
-            servers.
-          </p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <Code2 className="h-5 w-5 text-brand-600" />
-          <p className="mt-3 text-sm font-semibold text-slate-800">
-            Built for Accuracy
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Every tool ships with documented usage guides, real examples, and
-            visible formulas, not black-box results.
-          </p>
-        </div>
-      </div>
-
-      <div className="prose prose-slate mt-10 max-w-none text-sm leading-relaxed text-slate-700">
-        <h2>Who Built This</h2>
-        <p>
-          {SITE_NAME} is owned and developed by {OWNER_NAME} ({OWNER_NAME_LOCAL}
-          ), who designs, builds, and maintains the platform's tools and
-          infrastructure directly. For questions, feedback, or partnership
-          inquiries, reach out at{" "}
-          <a href={`mailto:${OWNER_CONTACT_EMAIL}`}>{OWNER_CONTACT_EMAIL}</a>{" "}
-          or visit our{" "}
-          <a href="/contact">Contact page</a>.
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-slate-900">Our Mission</h2>
+        <p className="leading-relaxed text-slate-700">
+          {`We believe powerful utility software should not require downloads, sign-ups, or payment. ${SITE_NAME} currently hosts ${toolCount} free tools across ${categoryCount} categories, covering everyday needs in development, text processing, mathematics, images, documents, search optimization, unit conversion, and color design.`}
         </p>
-      </div>
-    </main>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-slate-900">
+          What We Offer
+        </h2>
+        <p className="leading-relaxed text-slate-700">
+          Every tool on this platform runs directly in your browser with
+          clear usage instructions, real examples, and answers to common
+          questions, so you can get accurate results without guesswork.
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-slate-900">Ownership</h2>
+        <p className="leading-relaxed text-slate-700">
+          {`${SITE_NAME} is owned and operated by ${OWNER_NAME} (${OWNER_NAME_LOCAL}).`}
+        </p>
+        <dl className="space-y-1 text-slate-700">
+          <div className="flex gap-2">
+            <dt className="font-medium">Email:</dt>
+            <dd>{OWNER_CONTACT_EMAIL}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="font-medium">Phone:</dt>
+            <dd>{OWNER_CONTACT_PHONE_PRIMARY}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="font-medium">Phone (alternate):</dt>
+            <dd>{OWNER_CONTACT_PHONE_SECONDARY}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-slate-900">
+          Our Commitment
+        </h2>
+        <p className="leading-relaxed text-slate-700">
+          {`We are committed to keeping ${SITE_NAME} fast, secure, and free to use. If you have a suggestion for a new tool or spot an issue with an existing one, our contact page is always open.`}
+        </p>
+      </section>
+    </div>
   );
 }
