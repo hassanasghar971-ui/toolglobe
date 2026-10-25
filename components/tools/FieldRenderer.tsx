@@ -152,4 +152,67 @@ function FieldInput({
           name={field.id}
           accept={field.accept}
           disabled={disabled}
-          onChange={(e) 
+          onChange={(e) => onChange(field.id, e.target.files?.[0] ?? null)}
+          className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
+        />
+      );
+
+    case "text":
+    default:
+      return (
+        <input
+          id={fieldId}
+          type="text"
+          name={field.id}
+          placeholder={field.placeholder}
+          value={typeof value === "string" ? value : ""}
+          disabled={disabled}
+          onChange={(e) => onChange(field.id, e.target.value)}
+          className={BASE_INPUT_CLASS}
+        />
+      );
+  }
+}
+
+export default function FieldRenderer({
+  fields,
+  values,
+  errors,
+  onChange,
+  disabled,
+}: FieldRendererProps) {
+  return (
+    <div className="flex flex-col gap-5">
+      {fields.map((field) => {
+        const fieldId = `field-${field.id}`;
+        const error = errors[field.id];
+
+        return (
+          <div key={field.id} className="flex flex-col gap-1.5">
+            <label htmlFor={fieldId} className="text-sm font-medium text-slate-800">
+              {field.label}
+              {field.required && <span className="ml-1 text-red-500">*</span>}
+            </label>
+
+            <FieldInput
+              field={field}
+              fieldId={fieldId}
+              value={values[field.id]}
+              onChange={onChange}
+              disabled={disabled ?? false}
+            />
+
+            {field.helpText && !error && (
+              <p className="text-xs text-slate-500">{field.helpText}</p>
+            )}
+            {error && (
+              <p role="alert" className="text-xs font-medium text-red-600">
+                {error}
+              </p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
